@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <iostream>
 #include <cmath>
 
@@ -5,7 +6,7 @@ constexpr auto N = 4;
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
 
     float square_matrix[N][N];
     for (int i = 0; i < N; i++)
@@ -25,5 +26,12 @@ int main() {
         }
     }
 
-    return 0;
+    omp_set_num_threads(3);
+#pragma omp parallel
+    {
+    
+        cout << "Pershendetje ";
+    
+    }
+	return 0;
 }
