@@ -11,41 +11,43 @@
 #include <omp.h>
 #include <iostream>
 #include <cmath>
+#include <chrono>
 
 using namespace std;
 
-constexpr auto NR_ROWS = 120;
-constexpr auto NR_COLS = 200;
+constexpr auto NR_ROWS = 12000;
+constexpr auto NR_COLS = 12000;
+constexpr auto THREADS = 8;
 
 float sequential_matrix [NR_ROWS][NR_COLS];
 float parallel_matrix   [NR_ROWS][NR_COLS];
 
-void execute_sequential();
-void execute_parallel  ();
-bool isSolutionCorrect ();
+void initialize_matrices ();
+void execute_sequential  ();
+void execute_parallel    ();
+bool isSolutionCorrect   ();
 
 int main(int argc, char *argv[])
 {
-    for (int i = 0; i < NR_ROWS; i++)
-      {
-        sequential_matrix [i][0] = 150;
-        parallel_matrix   [i][0] = 150;
-      }
-    for (int i = 0; i < NR_COLS; i++)
-      {
-        sequential_matrix [0][i] = 250;
-        parallel_matrix   [0][i] = 250;
-      }
-
-    sequential_matrix [0][0] = 0;
-    parallel_matrix   [0][0] = 0;
-
+    initialize_matrices();
+    
+    auto start = chrono::high_resolution_clock::now();
     execute_sequential();
+    auto end = chrono::high_resolution_clock::now();
+    auto elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    printf("Time measured (sequential): %.3ld milliseconds.\n", elapsed);
+
+    auto start2 = chrono::high_resolution_clock::now();
     execute_parallel();
+    auto end2 = chrono::high_resolution_clock::now();
+    auto elapsed2 = chrono::duration_cast<chrono::milliseconds>(end2 - start2).count();
+    printf("Time measured   (parallel): %.3ld milliseconds.\n", elapsed2);
+
+    auto speedup = elapsed / elapsed2;
 
     if (isSolutionCorrect())
       {
-        cout << "Solution is correct\n";
+        printf("\nSpeedup: %ld\n\n", speedup);
       } 
     else 
       {
@@ -54,6 +56,31 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+/***************************************************************************//** 
+ * @brief Matrices initialization
+ *
+ * This functions initialize matrices in which calculation are performed
+ *
+ * @retval void
+ ******************************************************************************/
+void initialize_matrices()
+  {
+    for (int i = 0; i < NR_ROWS; i++)
+      {
+        sequential_matrix [i][0] = 150;
+        parallel_matrix   [i][0] = 150;
+      }
+
+    for (int i = 0; i < NR_COLS; i++)
+      {
+        sequential_matrix [0][i] = 250;
+        parallel_matrix   [0][i] = 250;
+      }
+
+    sequential_matrix [0][0] = 0;
+    parallel_matrix   [0][0] = 0;
+  }
 
 /***************************************************************************//** 
  * @brief Sequential execution
@@ -86,6 +113,7 @@ void execute_sequential()
  ******************************************************************************/
 void execute_parallel()
   {
+    // iterate through diagionals
     for (int i = 2; i < NR_ROWS + NR_COLS - 1; i++)
       {
   #pragma omp parallel for num_threads(4)
@@ -94,10 +122,9 @@ void execute_parallel()
             int row = i - j;
             if (row < NR_ROWS && j < NR_COLS)
               {
-                parallel_matrix[row][j] = (fabs(sin(parallel_matrix[row][j - 1])) +
-                                           fabs(sin(parallel_matrix[row - 1][j - 1])) +
-                                           fabs(sin(parallel_matrix[row - 1][j]))) *
-                                          100;
+                parallel_matrix[row][j] = (fabs(sin(parallel_matrix[row    ][j - 1]))  +
+                                           fabs(sin(parallel_matrix[row - 1][j - 1]))  +
+                                           fabs(sin(parallel_matrix[row - 1][j    ]))) * 100;
               }
           }
       }
