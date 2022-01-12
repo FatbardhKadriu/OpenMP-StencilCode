@@ -35,16 +35,19 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 	@echo "Created build directory."
 
+$(EXE_DIR):
+	mkdir -p $(EXE_DIR)
+	@echo "Created executable directory."
 
 ####################################################################
 # Build instructions			 								   #
 ####################################################################
-all: $(OBJ_DIR) $(EXE_DIR)/main 
+all: $(EXE_DIR) $(EXE_DIR)/main 
 
 $(EXE_DIR)/main: $(OBJ_DIR)/stencil.o
 
 $(OBJ_DIR)/stencil.o: $(SRC_DIR)/stencil.cpp 
-	g++ $(FLAGS) $(INCLUDEPATHS) $(SRC_DIR)/stencil.cpp -o $(OBJ_DIR)/stencil 
+	g++ $(FLAGS) $(INCLUDEPATHS) $(SRC_DIR)/stencil.cpp -o $(EXE_DIR)/stencil 
 
 dox:
 	mkdir -p $(DOX_DIR)
