@@ -10,6 +10,7 @@
  */
 #include <omp.h>
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <chrono>
 
@@ -31,23 +32,32 @@ int main(int argc, char *argv[])
 {
     initialize_matrices();
     
-    auto start = chrono::high_resolution_clock::now();
+    auto start_time_sequential = chrono::high_resolution_clock::now();
     execute_sequential();
-    auto end = chrono::high_resolution_clock::now();
-    auto elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    printf("Time measured (sequential): %.3ld milliseconds.\n", elapsed);
+    auto end_time_sequential = chrono::high_resolution_clock::now();
 
-    auto start2 = chrono::high_resolution_clock::now();
+    float elapsed_time_sequential = chrono::duration<float, std::milli>
+                                            (end_time_sequential - start_time_sequential).count();
+
+    cout << "Time measured (sequential): " 
+         << int (elapsed_time_sequential) 
+         << " milliseconds" << endl;
+
+    auto start_time_parallel = chrono::high_resolution_clock::now();
     execute_parallel();
-    auto end2 = chrono::high_resolution_clock::now();
-    auto elapsed2 = chrono::duration_cast<chrono::milliseconds>(end2 - start2).count();
-    printf("Time measured   (parallel): %.3ld milliseconds.\n", elapsed2);
+    auto end_time_parallel = chrono::high_resolution_clock::now();
+    
+    float elapsed_time_parallel = chrono::duration<float, std::milli>
+                                            (end_time_parallel - start_time_parallel).count();
+    cout << "Time measured   (parallel): " 
+         << int (elapsed_time_parallel) 
+         << " milliseconds" << endl;
 
-    auto speedup = elapsed / elapsed2;
+    float speedup = (float)(elapsed_time_sequential / elapsed_time_parallel);
 
     if (isSolutionCorrect())
       {
-        printf("\nSpeedup: %ld\n\n", speedup);
+        cout << "Speedup: " << setprecision(3) << speedup << endl;
       } 
     else 
       {
