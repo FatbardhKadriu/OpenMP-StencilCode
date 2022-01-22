@@ -16,12 +16,12 @@
 
 using namespace std;
 
-constexpr auto NR_ROWS = 12000;
-constexpr auto NR_COLS = 12000;
+constexpr auto NR_ROWS = 46080;
+constexpr auto NR_COLS = 46080;
 constexpr auto THREADS = 8;
 
-float sequential_matrix [NR_ROWS][NR_COLS];
-float parallel_matrix   [NR_ROWS][NR_COLS];
+float **sequential_matrix;
+float **parallel_matrix  ;
 
 void initialize_matrices ();
 void execute_sequential  ();
@@ -55,8 +55,10 @@ int main(int argc, char *argv[])
 
     float speedup = (float)(elapsed_time_sequential / elapsed_time_parallel);
 
+    cout << "Checking for solution correctness..." << endl;
     if (isSolutionCorrect())
       {
+        cout << "Solution is correct" << endl;
         cout << "Speedup: " << setprecision(3) << speedup << endl;
       } 
     else 
@@ -76,8 +78,16 @@ int main(int argc, char *argv[])
  ******************************************************************************/
 void initialize_matrices()
   {
+    sequential_matrix = new float *[NR_ROWS];
+    parallel_matrix   = new float *[NR_ROWS];
+
     for (int i = 0; i < NR_ROWS; i++)
       {
+        float *seq_row  = new float[NR_COLS];
+        float *par_row = new float[NR_COLS];
+        sequential_matrix[i] = seq_row ;
+        parallel_matrix  [i] = par_row;
+
         sequential_matrix [i][0] = 150;
         parallel_matrix   [i][0] = 150;
       }
@@ -126,7 +136,7 @@ void execute_parallel()
     // iterate through diagionals
     for (int i = 2; i < NR_ROWS + NR_COLS - 1; i++)
       {
-  #pragma omp parallel for num_threads(4)
+  #pragma omp parallel for num_threads(THREADS)
         for (int j = 1; j < i; j++)
           {
             int row = i - j;
