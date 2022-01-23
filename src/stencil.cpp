@@ -17,30 +17,32 @@
 using namespace std;
 
 /* defines the number of threads for parallel execution */
-int threads[5]    = { 2, 4, 8, 16, 32 };
-/* defines the matrix dimensions */
-int dimensions[8] = { 360, 720, 1440, 2880, 5760, 11520, 23040, 46080 };
+int threads[5]  = { 2, 4, 8, 16, 32 };
+/* defines the matrix rows */
+int    rows[12] = { 360, 720, 1440, 2880, 5760, 11520, 23040, 46080, 25, 538, 3000, 25673 };
+/* defines the matrix columns */
+int columns[12] = { 360, 720, 1440, 2880, 5760, 11520, 23040, 46080, 48, 892, 2000, 41983 };
 
 float **sequential_matrix;
 float **parallel_matrix  ;
 
-void initialize_matrices (int nr_rows, int nr_cols);
-void execute_sequential  (int nr_rows, int nr_cols);
-void execute_parallel    (int nr_rows, int nr_cols, int threads);
-bool isSolutionCorrect   (int nr_rows, int nr_cols);
+void initialize_matrices  (int nr_rows, int nr_cols);
+void sequential_execution (int nr_rows, int nr_cols);
+void parallel_execution   (int nr_rows, int nr_cols, int threads);
+bool isSolutionCorrect    (int nr_rows, int nr_cols);
 
-int main(int argc, char *argv[])
+int main (int argc, char *argv[])
 {
-    for(int t : threads)
+    for (int t : threads)
       {
         cout << "Threads: " << t << endl;
-        for(int d : dimensions)
+        for (int i = 0; i < 12; i++)
           {
-            cout << "Matrix dimensions: [" << d << "][" << d << "]" << endl;
-            initialize_matrices(d, d);
+            cout << "Matrix dimensions: [" << rows[i] << "][" << columns[i] << "]" << endl;
+            initialize_matrices (rows[i], columns[i]);
 
             auto start_time_sequential = chrono::high_resolution_clock::now();
-            execute_sequential(d, d);
+            sequential_execution (rows[i], columns[i]);
             auto end_time_sequential = chrono::high_resolution_clock::now();
 
             float elapsed_time_sequential = chrono::duration<float, std::milli>
@@ -51,7 +53,7 @@ int main(int argc, char *argv[])
                 << " milliseconds" << endl;
 
             auto start_time_parallel = chrono::high_resolution_clock::now();
-            execute_parallel(d, d, t);
+            parallel_execution (rows[i], columns[i], t);
             auto end_time_parallel = chrono::high_resolution_clock::now();
             
             float elapsed_time_parallel = chrono::duration<float, std::milli>
@@ -60,10 +62,10 @@ int main(int argc, char *argv[])
                 << int (elapsed_time_parallel) 
                 << " milliseconds" << endl;
 
-            float speedup = (float)(elapsed_time_sequential / elapsed_time_parallel);
+            float speedup = (float) (elapsed_time_sequential / elapsed_time_parallel);
 
             cout << "Checking for solution correctness..." << endl;
-            if (isSolutionCorrect(d, d))
+            if (isSolutionCorrect (rows[i], columns[i]))
               {
                 cout << "Solution is correct" << endl;
                 cout << "Speedup: " << setprecision(3) << speedup << endl;
@@ -72,6 +74,9 @@ int main(int argc, char *argv[])
               {
                 cout << "Solution is not correct\n";
               }
+
+            free (sequential_matrix);
+            free (parallel_matrix);
           }
       }
 
@@ -83,9 +88,12 @@ int main(int argc, char *argv[])
  *
  * This functions initialize matrices in which calculation are performed
  *
+ * @param [in] nr_rows - matrix rows number
+ * @param [in] nr_cols - matrix columns number
+ *
  * @retval void
  ******************************************************************************/
-void initialize_matrices(int nr_rows, int nr_cols)
+void initialize_matrices (int nr_rows, int nr_cols)
   {
     sequential_matrix = new float *[nr_rows];
     parallel_matrix   = new float *[nr_rows];
@@ -116,9 +124,12 @@ void initialize_matrices(int nr_rows, int nr_cols)
  *
  * This functions calculates matrix in the sequential way
  *
+ * @param [in] nr_rows - matrix rows number
+ * @param [in] nr_cols - matrix columns number
+ *
  * @retval void
  ******************************************************************************/
-void execute_sequential(int nr_rows, int nr_cols)
+void sequential_execution (int nr_rows, int nr_cols)
   {
     for (int i = 1; i < nr_rows; i++)
       {
@@ -138,9 +149,13 @@ void execute_sequential(int nr_rows, int nr_cols)
  *
  * This functions calculates matrix in the parallel way
  *
+ * @param [in] nr_rows - matrix rows number
+ * @param [in] nr_cols - matrix columns number
+ * @param [in] threads - number of threads
+ *
  * @retval void
  ******************************************************************************/
-void execute_parallel(int nr_rows, int nr_cols, int threads)
+void parallel_execution (int nr_rows, int nr_cols, int threads)
   {
     // iterate through diagionals
     for (int i = 2; i < nr_rows + nr_cols - 1; i++)
@@ -166,10 +181,13 @@ void execute_parallel(int nr_rows, int nr_cols, int threads)
  * This functions check two matrices that are generated from sequential execution
  * and parallel exectuion if they are equal
  *
+ * @param [in] nr_rows - matrix rows number
+ * @param [in] nr_cols - matrix columns number
+ *
  * @retval true if the solution is correct
  * @retval false otherwise
  ******************************************************************************/
-bool isSolutionCorrect(int nr_rows, int nr_cols)
+bool isSolutionCorrect (int nr_rows, int nr_cols)
   {
     bool solutionCorrect = true;
     for (int r = 1; r < nr_rows; r++)

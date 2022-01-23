@@ -47,7 +47,7 @@ all: $(EXE_DIR) $(EXE_DIR)/main
 $(EXE_DIR)/main: $(OBJ_DIR)/stencil.o
 
 $(OBJ_DIR)/stencil.o: $(SRC_DIR)/stencil.cpp 
-	g++ $(FLAGS) $(INCLUDEPATHS) $(SRC_DIR)/stencil.cpp -o $(EXE_DIR)/stencil 
+	g++ -std=c++11 $(FLAGS) $(INCLUDEPATHS) $(SRC_DIR)/stencil.cpp -o $(EXE_DIR)/stencil 
 
 dox:
 	mkdir -p $(DOX_DIR)
