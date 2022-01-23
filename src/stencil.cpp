@@ -166,9 +166,9 @@ void execute_parallel()
 bool isSolutionCorrect()
   {
     bool solutionCorrect = true;
-    for (int r = 0; r < NR_ROWS; r++)
+    for (int r = 1; r < NR_ROWS; r++)
       {
-        for (int c = 0; c < NR_COLS; c++)
+        for (int c = 1; c < NR_COLS; c++)
           {
             if (sequential_matrix[r][c] != parallel_matrix[r][c])
               {
