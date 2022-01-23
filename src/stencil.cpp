@@ -16,8 +16,11 @@
 
 using namespace std;
 
+/* defines the number of matrix rows */
 constexpr auto NR_ROWS = 46080;
+/* defines the number of matrix cols */
 constexpr auto NR_COLS = 46080;
+/* defines the number of threads for parallel execution */
 constexpr auto THREADS = 8;
 
 float **sequential_matrix;
@@ -157,7 +160,8 @@ void execute_parallel()
  * This functions check two matrices that are generated from sequential execution
  * and parallel exectuion if they are equal
  *
- * @retval void
+ * @retval true if the solution is correct
+ * @retval false otherwise
  ******************************************************************************/
 bool isSolutionCorrect()
   {
